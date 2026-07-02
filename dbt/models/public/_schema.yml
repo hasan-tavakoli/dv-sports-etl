@@ -1,0 +1,13 @@
+# filepath: dbt/models/public/_schema.yml
+version: 2
+
+models:
+  - name: daily_active_customers
+    description: "Daily count of distinct active customers based on game activity."
+    columns:
+      - name: activity_date
+        description: "The date of the activity."
+        tests:
+          - not_null
+      - name: active_customer_count
+        description: "Total number of unique customers who played on that day."
