@@ -1,0 +1,13 @@
+# filepath: dbt/models/public/_schema.yml
+version: 2
+
+models:
+  - name: monthly_top_traders
+    description: "Aggregated count of trades per trader per month"
+    columns:
+      - name: trade_month
+        description: "The first day of the month the trades occurred"
+      - name: trader_id
+        description: "Unique identifier for the trader"
+      - name: total_trades
+        description: "Total number of trades performed by the trader in the month"

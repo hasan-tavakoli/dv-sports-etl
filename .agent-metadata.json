@@ -1,0 +1,11 @@
+{
+  "source": "model",
+  "domain": "bi",
+  "environment": "stage",
+  "dag_id": "dv_bi_elt",
+  "schedule": "0 12 * * *",
+  "service_account": "analytics-dev@dv-dev-eu-w1-sports-elt.iam.gserviceaccount.com",
+  "execution_project": "dv-dev-eu-w1-sports-elt",
+  "target_project": "dv-dev-eu-w1-sports-data",
+  "config_intent": ""
+}
