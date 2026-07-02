@@ -1,0 +1,14 @@
+# filepath: dbt/models/public/_schema.yml
+version: 2
+
+models:
+  - name: stg_sports_games
+    description: "Staging model for sports games data"
+    columns:
+      - name: game_id
+        tests:
+          - unique
+          - not_null
+      - name: game_date
+        tests:
+          - not_null
