@@ -1,0 +1,13 @@
+# filepath: dbt/models/public/_schema.yml
+version: 2
+
+models:
+  - name: daily_active_customers
+    description: "Aggregated count of distinct customers who placed bets per day."
+    columns:
+      - name: activity_date
+        description: "The date of the betting activity."
+        tests:
+          - not_null
+      - name: active_customer_count
+        description: "The number of unique customers who placed at least one bet on this day."
