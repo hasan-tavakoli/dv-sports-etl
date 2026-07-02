@@ -1,0 +1,11 @@
+# filepath: dbt/models/public/_schema.yml
+version: 2
+
+models:
+  - name: stg_sports_games
+    description: "A model representing the sports games status check."
+    columns:
+      - name: status_code
+        description: "Returns 1 to confirm the model is functioning."
+        tests:
+          - not_null
