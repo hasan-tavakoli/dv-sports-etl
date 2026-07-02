@@ -1,0 +1,12 @@
+# filepath: dbt/models/public/_schema.yml
+version: 2
+
+models:
+  - name: stg_games
+    description: "A placeholder model for sports games data."
+    columns:
+      - name: id
+        description: "Placeholder identifier."
+        tests:
+          - unique
+          - not_null
