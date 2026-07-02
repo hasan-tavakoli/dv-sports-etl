@@ -1,0 +1,11 @@
+{
+  "source": "model",
+  "domain": "bi",
+  "environment": "stage",
+  "dag_id": "dv_bi_elt",
+  "schedule": "This is a new DAG ('dv_bi_elt') and no schedule was given \u2014 what cron schedule should it use? (e.g. '0 6 * * *')",
+  "service_account": "analytics-dev@dv-dev-eu-w1-sports-elt.iam.gserviceaccount.com",
+  "execution_project": "dv-dev-eu-w1-sports-elt",
+  "target_project": "dv-dev-eu-w1-sports-data",
+  "config_intent": ""
+}
