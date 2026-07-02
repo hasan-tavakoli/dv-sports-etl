@@ -1,0 +1,15 @@
+# filepath: dbt/models/public/_schema.yml
+version: 2
+
+models:
+  - name: weekly_top_players
+    description: "Aggregated count of bets per player per week"
+    columns:
+      - name: player_id
+        description: "Unique identifier for the player"
+        tests:
+          - not_null
+      - name: bet_week
+        description: "The start of the week for the recorded bets"
+      - name: total_bets
+        description: "The total number of bets placed by the player in the given week"
