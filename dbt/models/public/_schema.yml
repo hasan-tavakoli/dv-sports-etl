@@ -1,0 +1,11 @@
+# filepath: dbt/models/public/_schema.yml
+version: 2
+
+models:
+  - name: stg_sports_games
+    description: "A model that represents the sports games data."
+    columns:
+      - name: id
+        description: "Placeholder identifier for sports games."
+        tests:
+          - not_null
