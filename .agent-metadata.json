@@ -1,0 +1,11 @@
+{
+  "source": "model",
+  "domain": "sports",
+  "environment": "dev",
+  "dag_id": "",
+  "schedule": "",
+  "service_account": "dbt-runner@dev-execution.iam.gserviceaccount.com",
+  "execution_project": "dev-execution-123",
+  "target_project": "target-project-456",
+  "config_intent": "no public step"
+}
