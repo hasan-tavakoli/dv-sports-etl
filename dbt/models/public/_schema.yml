@@ -1,0 +1,15 @@
+# filepath: dbt/models/public/_schema.yml
+version: 2
+
+models:
+  - name: daily_active_customers
+    description: "Aggregated daily count of unique customers from the sports games data."
+    columns:
+      - name: activity_date
+        description: "The date of the activity."
+        tests:
+          - not_null
+      - name: daily_active_customer_count
+        description: "Number of distinct customers active on that day."
+        tests:
+          - not_null
