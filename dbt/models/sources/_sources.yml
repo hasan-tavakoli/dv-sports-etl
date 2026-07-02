@@ -1,0 +1,9 @@
+version: 2
+
+sources:
+  - name: sports_raw
+    database: dv-dev-eu-w1-sports-data
+    schema: raw_sports
+    tables:
+      - name: games
+        description: Raw sports game logs and statistics.
