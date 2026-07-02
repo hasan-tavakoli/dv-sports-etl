@@ -1,0 +1,21 @@
+# filepath: dbt/models/public/_schema.yml
+version: 2
+
+models:
+  - name: weekly_top_players
+    description: "A summary of top-performing players over the last 7 days, ranked by points scored per sport."
+    columns:
+      - name: player_id
+        description: "Unique identifier for the player."
+        tests:
+          - not_null
+      - name: player_name
+        description: "The name of the player."
+      - name: sport_type
+        description: "The category of sport the player competes in."
+      - name: total_weekly_points
+        description: "Sum of points scored in the last 7 days."
+      - name: games_played
+        description: "Total number of games played in the last 7 days."
+      - name: rank_in_sport
+        description: "Rank of the player based on points within their respective sport."
