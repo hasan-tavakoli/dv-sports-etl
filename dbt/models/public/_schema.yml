@@ -1,0 +1,13 @@
+# filepath: dbt/models/public/_schema.yml
+version: 2
+
+models:
+  - name: avg_bet_per_player
+    description: "Computes the average bet amount per player based on raw sports betting data."
+    columns:
+      - name: player_id
+        description: "Unique identifier for the player."
+        tests:
+          - not_null
+      - name: average_bet_amount
+        description: "The calculated average bet amount for the player."

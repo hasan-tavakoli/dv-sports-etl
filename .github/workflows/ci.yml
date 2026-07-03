@@ -7,8 +7,13 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  # PLACEHOLDER: Replace <owner> with your GitHub username (e.g. ghcr.io/myusername/dv-sports-etl)
-  IMAGE_NAME: <owner>/dv-sports-etl
+  # Hardcoded: lowercased owner + repo name.
+  # ${{ env.IMAGE_NAME }} is resolved by the template engine BEFORE any step runs,
+  # so it must live here — not in $GITHUB_ENV — to be visible to action inputs
+  # such as docker/build-push-action tags: and the step-level env: block.
+  IMAGE_NAME: hasan-tavakoli/dv-sports-etl
+  PUBSUB_PROJECT: ht-project-500813
+  PUBSUB_TOPIC: dv-model-image-ready
 
 jobs:
   build-and-push:
@@ -38,11 +43,76 @@ jobs:
           CLEAN_BRANCH=$(echo "${{ github.ref_name }}" | sed 's/[^a-zA-Z0-9_.-]/-/g')
           echo "clean_branch=$CLEAN_BRANCH" >> $GITHUB_OUTPUT
 
+      - name: Generate timestamp
+        id: ts
+        run: echo "timestamp=$(date -u +%Y%m%d%H%M%S)" >> $GITHUB_OUTPUT
+
+      - name: Compute image tag and full ref
+        id: image_tag
+        run: |
+          TAG="${{ steps.branch.outputs.clean_branch }}-${{ steps.ts.outputs.timestamp }}-${{ steps.vars.outputs.sha_short }}"
+          echo "tag=${TAG}" >> $GITHUB_OUTPUT
+          # Full ref also captured here so the Pub/Sub step gets the same value
+          # without relying on $GITHUB_ENV interpolation inside a step env: block.
+          echo "ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}" >> $GITHUB_OUTPUT
+
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
           context: .
           push: true
           tags: |
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.branch.outputs.clean_branch }}-${{ steps.vars.outputs.sha_short }}
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.image_tag.outputs.tag }}
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+
+      # ── Pub/Sub: wake the config-agent ───────────────────────────────────
+      - name: Authenticate to GCP
+        if: github.ref_name == 'staging'
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Set up gcloud CLI
+        if: github.ref_name == 'staging'
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Publish config-agent event to Pub/Sub
+        if: github.ref_name == 'staging'
+        env:
+          # Use step outputs — these are always resolved correctly at runtime.
+          IMAGE_REF: ${{ steps.image_tag.outputs.ref }}
+          IMAGE_TAG: ${{ steps.image_tag.outputs.tag }}
+        run: |
+          # 1. Read .agent-metadata.json from the repo root
+          METADATA=$(cat .agent-metadata.json)
+
+          # 2. Merge in image + tag, and force source="model"
+          CONFIG_PAYLOAD=$(echo "${METADATA}" | python3 -c "
+          import sys, json
+          meta = json.load(sys.stdin)
+          meta['source'] = 'model'
+          meta['image']  = '${IMAGE_REF}'
+          meta['tag']    = '${IMAGE_TAG}'
+          print(json.dumps(meta))
+          ")
+
+          # 3. Wrap in the Agent Runtime streamQuery envelope.
+          #    input.message must be the config JSON *as a string*.
+          ENVELOPE=$(python3 -c "
+          import json, sys
+          payload = sys.stdin.read().strip()
+          envelope = {
+            'class_method': 'stream_query',
+            'input': {
+              'message': payload,
+              'user_id': 'ci-publisher'
+            }
+          }
+          print(json.dumps(envelope))
+          " <<< "${CONFIG_PAYLOAD}")
+
+          # 4. Publish to Pub/Sub
+          echo "${ENVELOPE}" | gcloud pubsub topics publish "${PUBSUB_TOPIC}" \
+            --project="${PUBSUB_PROJECT}" \
+            --message-encoding=json \
+            --message="$(cat -)"

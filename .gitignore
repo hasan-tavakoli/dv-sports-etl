@@ -1,0 +1,7 @@
+# Local environment variables
+.env
+
+# Target output directories
+target/
+dbt_packages/
+logs/
