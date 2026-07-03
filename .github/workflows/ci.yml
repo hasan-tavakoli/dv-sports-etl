@@ -112,7 +112,6 @@ jobs:
           " <<< "${CONFIG_PAYLOAD}")
 
           # 4. Publish to Pub/Sub
-          echo "${ENVELOPE}" | gcloud pubsub topics publish "${PUBSUB_TOPIC}" \
+          gcloud pubsub topics publish "${PUBSUB_TOPIC}" \
             --project="${PUBSUB_PROJECT}" \
-            --message-encoding=json \
-            --message="$(cat -)"
+            --message="${ENVELOPE}"
