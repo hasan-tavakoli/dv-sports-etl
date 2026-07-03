@@ -7,6 +7,8 @@ on:
 
 env:
   REGISTRY: ghcr.io
+  PUBSUB_PROJECT: ht-project-500813
+  PUBSUB_TOPIC: dv-model-image-ready
 
 jobs:
   build-and-push:
@@ -41,11 +43,72 @@ jobs:
           CLEAN_BRANCH=$(echo "${{ github.ref_name }}" | sed 's/[^a-zA-Z0-9_.-]/-/g')
           echo "clean_branch=$CLEAN_BRANCH" >> $GITHUB_OUTPUT
 
+      - name: Generate timestamp
+        id: ts
+        run: echo "timestamp=$(date -u +%Y%m%d%H%M%S)" >> $GITHUB_OUTPUT
+
+      - name: Compute image tag
+        id: image_tag
+        run: |
+          TAG="${{ steps.branch.outputs.clean_branch }}-${{ steps.ts.outputs.timestamp }}-${{ steps.vars.outputs.sha_short }}"
+          echo "tag=${TAG}" >> $GITHUB_OUTPUT
+
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
           context: .
           push: true
           tags: |
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.branch.outputs.clean_branch }}-${{ steps.vars.outputs.sha_short }}
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.image_tag.outputs.tag }}
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+
+      # ── Pub/Sub: wake the config-agent ───────────────────────────────────
+      - name: Authenticate to GCP
+        if: github.ref_name == 'staging'
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Set up gcloud CLI
+        if: github.ref_name == 'staging'
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Publish config-agent event to Pub/Sub
+        if: github.ref_name == 'staging'
+        env:
+          IMAGE_REF: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          IMAGE_TAG: ${{ steps.image_tag.outputs.tag }}
+        run: |
+          # 1. Read .agent-metadata.json from the repo root
+          METADATA=$(cat .agent-metadata.json)
+
+          # 2. Merge in image + tag, and force source="model"
+          CONFIG_PAYLOAD=$(echo "${METADATA}" | python3 -c "
+          import sys, json
+          meta = json.load(sys.stdin)
+          meta['source'] = 'model'
+          meta['image']  = '${IMAGE_REF}'
+          meta['tag']    = '${IMAGE_TAG}'
+          print(json.dumps(meta))
+          ")
+
+          # 3. Wrap in the Agent Runtime streamQuery envelope.
+          #    input.message must be the config JSON *as a string*.
+          ENVELOPE=$(python3 -c "
+          import json, sys
+          payload = sys.stdin.read().strip()
+          envelope = {
+            'class_method': 'stream_query',
+            'input': {
+              'message': payload,
+              'user_id': 'ci-publisher'
+            }
+          }
+          print(json.dumps(envelope))
+          " <<< "${CONFIG_PAYLOAD}")
+
+          # 4. Publish to Pub/Sub
+          echo "${ENVELOPE}" | gcloud pubsub topics publish "${PUBSUB_TOPIC}" \
+            --project="${PUBSUB_PROJECT}" \
+            --message-encoding=json \
+            --message="$(cat -)"
