@@ -2,14 +2,19 @@
 version: 2
 
 models:
-  - name: daily_active_users
-    description: "Aggregated daily active users for the sports domain based on raw event data."
+  - name: stg_sports_clean
+    description: "Cleaned sports staging data. Replaces old staging table to ensure data quality and schema consistency."
     columns:
-      - name: activity_date
-        description: "The date of the user activity."
+      - name: sports_id
+        description: "Unique identifier for the sports event."
         tests:
+          - unique
           - not_null
-      - name: daily_active_users
-        description: "The count of unique users who performed an action on that day."
-        tests:
-          - not_null
+      - name: event_name
+        description: "Name of the sporting event."
+      - name: event_timestamp
+        description: "The scheduled start time of the event."
+      - name: venue_location
+        description: "The physical location or stadium where the event takes place."
+      - name: processed_at
+        description: "Timestamp when the record was processed by dbt."

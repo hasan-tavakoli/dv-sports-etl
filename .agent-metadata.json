@@ -3,7 +3,7 @@
   "domain": "sports",
   "environment": "stage",
   "dag_id": "dv_sports_elt",
-  "schedule": "0 6 * * *",
+  "schedule": "0 3 * * *",
   "service_account": "analytics-dev@dv-dev-eu-w1-sports-elt.iam.gserviceaccount.com",
   "execution_project": "dv-dev-eu-w1-sports-elt",
   "target_project": "dv-dev-eu-w1-sports-data",
