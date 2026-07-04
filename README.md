@@ -7,7 +7,7 @@ A sample per-domain dbt project for the **sports** domain, targeted by an automa
 ## Role in the system
 
 - **Orchestrator → PR**: the orchestrator agent opens `model_only` pull requests here, containing generated dbt SQL and `_schema.yml` changes on a `feature/*` branch.
-- **Merge → CI → Pub/Sub → config-agent**: once a PR merges into `staging`, the `.github/workflows/ci.yml` workflow builds a Docker image, pushes it to the container registry (`ghcr.io`), and — for pushes to `staging` — publishes an event to the `dv-model-image-ready` Pub/Sub topic containing the new image reference. That event wakes the config-agent, which updates the deployed image for this domain.
+- **Merge → CI → Pub/Sub → config-agent**: once a PR merges into `main`, the `.github/workflows/ci.yml` workflow builds a Docker image, pushes it to the container registry (`ghcr.io`), and — for pushes to `main` — publishes an event to the `dv-model-image-ready` Pub/Sub topic containing the new image reference. That event wakes the config-agent, which updates the deployed image for this domain.
 
 ## Repo structure
 
@@ -19,11 +19,11 @@ dbt/
       _sources.yml      # source table definitions (raw_sports.games, raw_sports.bets)
 .github/
   workflows/
-    ci.yml              # build & push Docker image; publish Pub/Sub event on staging
+    ci.yml              # build & push Docker image; publish Pub/Sub event on main
 .agent-metadata.json     # domain/target metadata read by the CI workflow
 ```
 
-The working branch is `staging`.
+The working branch is `main`.
 
 ## Note
 

@@ -3,7 +3,7 @@ name: Build and Push Docker Image
 on:
   push:
     branches:
-      - '**'
+      - main
 
 env:
   REGISTRY: ghcr.io
@@ -67,17 +67,17 @@ jobs:
 
       # ── Pub/Sub: wake the config-agent ───────────────────────────────────
       - name: Authenticate to GCP
-        if: github.ref_name == 'staging'
+        if: github.ref_name == 'main'
         uses: google-github-actions/auth@v2
         with:
           credentials_json: ${{ secrets.GCP_SA_KEY }}
 
       - name: Set up gcloud CLI
-        if: github.ref_name == 'staging'
+        if: github.ref_name == 'main'
         uses: google-github-actions/setup-gcloud@v2
 
       - name: Publish config-agent event to Pub/Sub
-        if: github.ref_name == 'staging'
+        if: github.ref_name == 'main'
         env:
           # Use step outputs — these are always resolved correctly at runtime.
           IMAGE_REF: ${{ steps.image_tag.outputs.ref }}
