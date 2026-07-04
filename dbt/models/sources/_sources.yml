@@ -7,5 +7,5 @@ sources:
     tables:
       - name: games
         description: Raw sports game logs and statistics.
-      - name: bets
-        description: Raw player betting transactions.
+      - name: events
+        description: Raw user event data.

@@ -2,12 +2,12 @@
 version: 2
 
 models:
-  - name: avg_bet_per_player
-    description: "Computes the average bet amount per player based on raw sports betting data."
+  - name: avg_events_per_user
+    description: "Computes the average event value per user based on raw sports event data."
     columns:
-      - name: player_id
-        description: "Unique identifier for the player."
+      - name: user_id
+        description: "Unique identifier for the user."
         tests:
           - not_null
-      - name: average_bet_amount
-        description: "The calculated average bet amount for the player."
+      - name: average_event_value
+        description: "The calculated average event value for the user."
