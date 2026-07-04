@@ -3,13 +3,13 @@ version: 2
 
 models:
   - name: daily_active_users
-    description: "Aggregated daily active users for the sports domain based on raw event data."
+    description: "Aggregated daily active users for the sports domain based on raw event logs."
     columns:
       - name: activity_date
         description: "The date of the user activity."
         tests:
           - not_null
       - name: daily_active_users
-        description: "The count of unique users who performed an action on that day."
+        description: "The unique count of users who performed an action on that date."
         tests:
           - not_null

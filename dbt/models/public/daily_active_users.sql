@@ -1,9 +1,9 @@
 -- filepath: dbt/models/public/daily_active_users.sql
 with raw_events as (
     select
-        date(event_timestamp) as activity_date,
-        user_id
-    from {{ source('sports_raw', 'user_events') }}
+        user_id,
+        cast(event_timestamp as date) as activity_date
+    from {{ source('sports', 'raw_user_events') }}
 )
 
 select
