@@ -2,12 +2,14 @@
 version: 2
 
 models:
-  - name: avg_events_per_user
-    description: "Computes the average event value per user based on raw sports event data."
+  - name: daily_active_users
+    description: "Aggregated daily active users for the sports domain based on raw event logs."
     columns:
-      - name: user_id
-        description: "Unique identifier for the user."
+      - name: activity_date
+        description: "The date of the user activity."
         tests:
           - not_null
-      - name: average_event_value
-        description: "The calculated average event value for the user."
+      - name: daily_active_users
+        description: "The count of unique users active on the given date."
+        tests:
+          - not_null
