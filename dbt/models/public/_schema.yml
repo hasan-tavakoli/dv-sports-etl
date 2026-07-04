@@ -2,14 +2,15 @@
 version: 2
 
 models:
-  - name: daily_active_users
-    description: "Aggregated daily active users for the sports domain based on raw event data."
+  - name: daily_revenue_summary
+    description: "Computes total daily revenue aggregated from raw transaction source data."
     columns:
-      - name: activity_date
-        description: "The date of the user activity."
+      - name: revenue_date
+        description: "The date of the transactions."
         tests:
+          - unique
           - not_null
-      - name: daily_active_users
-        description: "The count of unique users who performed an action on that day."
-        tests:
-          - not_null
+      - name: total_daily_revenue
+        description: "The sum of transaction amounts for the given day."
+      - name: transaction_count
+        description: "The total number of transactions recorded for the given day."
