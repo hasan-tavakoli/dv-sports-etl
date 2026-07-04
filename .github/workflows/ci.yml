@@ -7,6 +7,11 @@ on:
 
 env:
   REGISTRY: ghcr.io
+  # Hardcoded: lowercased owner + repo name.
+  # ${{ env.IMAGE_NAME }} is resolved by the template engine BEFORE any step runs,
+  # so it must live here — not in $GITHUB_ENV — to be visible to action inputs
+  # such as docker/build-push-action tags: and the step-level env: block.
+  IMAGE_NAME: hasan-tavakoli/dv-sports-etl
   PUBSUB_PROJECT: ht-project-500813
   PUBSUB_TOPIC: dv-model-image-ready
 
@@ -20,11 +25,6 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-
-      - name: Set lowercased image name
-        run: |
-          OWNER_LOWER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
-          echo "IMAGE_NAME=${OWNER_LOWER}/dv-sports-etl" >> $GITHUB_ENV
 
       - name: Log in to the Container registry
         uses: docker/login-action@v3
@@ -47,11 +47,14 @@ jobs:
         id: ts
         run: echo "timestamp=$(date -u +%Y%m%d%H%M%S)" >> $GITHUB_OUTPUT
 
-      - name: Compute image tag
+      - name: Compute image tag and full ref
         id: image_tag
         run: |
           TAG="${{ steps.branch.outputs.clean_branch }}-${{ steps.ts.outputs.timestamp }}-${{ steps.vars.outputs.sha_short }}"
           echo "tag=${TAG}" >> $GITHUB_OUTPUT
+          # Full ref also captured here so the Pub/Sub step gets the same value
+          # without relying on $GITHUB_ENV interpolation inside a step env: block.
+          echo "ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}" >> $GITHUB_OUTPUT
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
@@ -76,7 +79,8 @@ jobs:
       - name: Publish config-agent event to Pub/Sub
         if: github.ref_name == 'staging'
         env:
-          IMAGE_REF: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          # Use step outputs — these are always resolved correctly at runtime.
+          IMAGE_REF: ${{ steps.image_tag.outputs.ref }}
           IMAGE_TAG: ${{ steps.image_tag.outputs.tag }}
         run: |
           # 1. Read .agent-metadata.json from the repo root
@@ -108,7 +112,6 @@ jobs:
           " <<< "${CONFIG_PAYLOAD}")
 
           # 4. Publish to Pub/Sub
-          echo "${ENVELOPE}" | gcloud pubsub topics publish "${PUBSUB_TOPIC}" \
+          gcloud pubsub topics publish "${PUBSUB_TOPIC}" \
             --project="${PUBSUB_PROJECT}" \
-            --message-encoding=json \
-            --message="$(cat -)"
+            --message="${ENVELOPE}"
