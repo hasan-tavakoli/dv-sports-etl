@@ -1,13 +1,13 @@
 -- filepath: dbt/models/public/daily_revenue_summary.sql
-with source_data as (
+with raw_transactions as (
     select
-        date_trunc('day', transaction_timestamp) as revenue_date,
+        transaction_timestamp,
         amount
-    from {{ source('analytics_raw', 'transactions') }}
+    from {{ source('analytics', 'raw_transactions') }}
 )
 
 select
-    revenue_date,
+    date(transaction_timestamp) as revenue_date,
     sum(amount) as total_daily_revenue
-from source_data
+from raw_transactions
 group by 1
