@@ -1,11 +1,11 @@
 {
   "source": "model",
-  "domain": "sports",
+  "domain": "analytics",
   "environment": "stage",
-  "dag_id": "dv_sports_elt",
-  "schedule": "0 6 * * *",
-  "service_account": "analytics-dev@dv-dev-eu-w1-sports-elt.iam.gserviceaccount.com",
-  "execution_project": "dv-dev-eu-w1-sports-elt",
-  "target_project": "dv-dev-eu-w1-sports-data",
+  "dag_id": "dv_analytics_elt",
+  "schedule": "0 7 * * *",
+  "service_account": "analytics-dev@dv-dev-eu-w1-analytics-elt.iam.gserviceaccount.com",
+  "execution_project": "dv-dev-eu-w1-analytics-elt",
+  "target_project": "dv-dev-eu-w1-analytics-data",
   "config_intent": ""
 }
