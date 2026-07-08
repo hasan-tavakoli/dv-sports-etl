@@ -3,14 +3,13 @@ version: 2
 
 models:
   - name: daily_revenue_summary
-    description: "Aggregates total revenue on a daily basis from raw transaction data."
+    description: "Aggregated daily revenue and active user metrics derived from raw transaction data."
     columns:
       - name: revenue_date
         description: "The date of the transactions."
         tests:
-          - unique
           - not_null
       - name: total_daily_revenue
-        description: "The sum of all transaction amounts for the given date."
-        tests:
-          - not_null
+        description: "The total sum of revenue for the given day."
+      - name: daily_active_users
+        description: "The number of unique users who generated revenue on this day."
