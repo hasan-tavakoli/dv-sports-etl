@@ -1,13 +1,7 @@
 -- filepath: dbt/models/public/daily_revenue_summary.sql
-with raw_transactions as (
-    select
-        transaction_timestamp,
-        amount
-    from {{ source('analytics', 'raw_transactions') }}
-)
-
 select
-    date_trunc('day', transaction_timestamp)::date as revenue_date,
-    sum(amount) as total_daily_revenue
-from raw_transactions
+    date_trunc(transaction_timestamp, day) as revenue_date,
+    sum(amount) as total_daily_revenue,
+    count(distinct user_id) as daily_active_users
+from {{ source('raw_data', 'transactions') }}
 group by 1
