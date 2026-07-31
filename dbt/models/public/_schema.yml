@@ -3,11 +3,13 @@ version: 2
 
 models:
   - name: daily_revenue_summary
-    description: "Aggregated daily revenue summary from raw transaction data."
+    description: "Aggregates total revenue per day from raw transaction data."
     columns:
       - name: revenue_date
         description: "The date of the transactions."
         tests:
           - not_null
       - name: total_daily_revenue
-        description: "The sum of transaction amounts for that day."
+        description: "The sum of transaction amounts for the given day."
+      - name: currency
+        description: "The currency code for the revenue amount."
